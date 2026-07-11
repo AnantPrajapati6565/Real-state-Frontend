@@ -1191,9 +1191,15 @@ const AdminDashboard = ({ children }) => {
               </div>
               <div>
                 <p className="text-sm text-slate-500 font-medium">Total Content</p>
-                <p className="font-semibold text-slate-900 text-xl">
+                {/* <p className="font-semibold text-slate-900 text-xl">
                   {stats.projects + stats.services + stats.testimonials + stats.contacts + stats.gallery}
-                </p>
+                </p> */}
+
+
+                    <p className="font-semibold text-slate-900 text-xl">
+      {/* 👇 REPLACE THIS LINE */}
+      {Number(stats.projects) + Number(stats.services) + Number(stats.testimonials) + Number(stats.contacts) + Number(stats.gallery)}
+    </p>
                 <p className="text-sm text-slate-600">Across all categories</p>
               </div>
             </div>
