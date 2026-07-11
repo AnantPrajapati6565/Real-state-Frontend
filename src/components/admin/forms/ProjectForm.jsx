@@ -1,10 +1,11 @@
 
 
 
+
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
-import { X, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react'
+import { X, Plus, Trash2 } from 'lucide-react'
 
 const ProjectForm = ({ project, onClose }) => {
   const [formData, setFormData] = useState({
@@ -22,8 +23,6 @@ const ProjectForm = ({ project, onClose }) => {
   })
   const [loading, setLoading] = useState(false)
   const [featureInput, setFeatureInput] = useState('')
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
 
   useEffect(() => {
     if (project) {
@@ -40,9 +39,6 @@ const ProjectForm = ({ project, onClose }) => {
         bathrooms: project.bathrooms?.toString() || '',
         area: project.area || ''
       })
-      if (project.image) {
-        setImagePreview(project.image)
-      }
     }
   }, [project])
 
@@ -70,58 +66,23 @@ const ProjectForm = ({ project, onClose }) => {
     })
   }
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-      // We'll send the actual file via FormData, so we don't need to store filename here
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // Use FormData to support file upload
-      const submitData = new FormData()
-
-      // Append all text fields
-      submitData.append('name', formData.name)
-      submitData.append('description', formData.description)
-      submitData.append('price', formData.price)
-      submitData.append('location', formData.location)
-      submitData.append('status', formData.status)
-      submitData.append('category', formData.category)
-      submitData.append('bedrooms', formData.bedrooms || '')
-      submitData.append('bathrooms', formData.bathrooms || '')
-      submitData.append('area', formData.area || '')
-      submitData.append('features', JSON.stringify(formData.features))
-
-      // If there's a new image file, append it
-      if (imageFile) {
-        submitData.append('image', imageFile)
-      } else if (formData.image) {
-        // If no new file but we have an existing image URL, send it as a string
-        submitData.append('existingImage', formData.image)
-      }
-
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const data = {
+        ...formData,
+        price: parseFloat(formData.price),
+        bedrooms: parseInt(formData.bedrooms) || null,
+        bathrooms: parseInt(formData.bathrooms) || null
       }
 
       if (project) {
-        await api.put(`/projects/${project.id}`, submitData, config)
+        await api.put(`/projects/${project.id}`, data)
         toast.success('✅ Project updated successfully!')
       } else {
-        await api.post('/projects', submitData, config)
+        await api.post('/projects', data)
         toast.success('✅ Project created successfully!')
       }
       
@@ -134,7 +95,6 @@ const ProjectForm = ({ project, onClose }) => {
     }
   }
 
-  // Unsplash image suggestions
   const unsplashImages = [
     { url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600', label: 'Luxury Villa' },
     { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', label: 'Modern House' },
@@ -145,13 +105,10 @@ const ProjectForm = ({ project, onClose }) => {
   ]
 
   const selectUnsplashImage = (url) => {
-    // When selecting an Unsplash image, we treat it as a URL (not a file)
-    setImageFile(null) // clear any file selection
     setFormData({
       ...formData,
       image: url
     })
-    setImagePreview(url)
   }
 
   return (
@@ -262,45 +219,6 @@ const ProjectForm = ({ project, onClose }) => {
               />
             </div>
           </div>
-
-          {/* Image Upload Section */}
-          <div className="border-2 border-dashed border-blue-300 rounded-2xl p-6 bg-blue-50/30 hover:border-blue-500 hover:bg-blue-50 transition">
-            <label className="block cursor-pointer">
-              <div className="text-center">
-                <Upload className="w-12 h-12 mx-auto text-blue-400 mb-3" />
-                <p className="font-semibold text-gray-700">Upload Project Image</p>
-                <p className="text-gray-500 text-sm">Click here to choose an image (JPG, PNG, WebP)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </div>
-            </label>
-          </div>
-
-          {/* Image Preview */}
-          {imagePreview && (
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Project preview"
-                className="w-full h-72 object-cover rounded-2xl shadow-xl border-4 border-white"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  setImagePreview(null)
-                  setImageFile(null)
-                  setFormData({ ...formData, image: '' })
-                }}
-                className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          )}
 
           {/* Unsplash Image Suggestions */}
           <div>
@@ -468,4 +386,3 @@ const ProjectForm = ({ project, onClose }) => {
 }
 
 export default ProjectForm
-
