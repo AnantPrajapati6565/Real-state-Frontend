@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../services/api'
@@ -58,9 +60,9 @@ const AdminTestimonials = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading testimonials...</p>
         </div>
       </div>
@@ -68,19 +70,19 @@ const AdminTestimonials = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen p-8 bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="mb-8 bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-xl p-6 flex flex-col sm:flex-row justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Manage Testimonials</h2>
-          <p className="text-gray-600 text-sm">Total: {testimonials.length} testimonials</p>
+          <h2 className="text-3xl font-bold text-slate-800">⭐ Manage Testimonials</h2>
+          <p className="text-gray-500 mt-1">Total Testimonials : {testimonials.length}</p>
         </div>
         <button
           onClick={() => {
             setEditingTestimonial(null)
             setShowForm(true)
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="mt-4 sm:mt-0 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
         >
           <span className="text-xl">➕</span>
           Add Testimonial
@@ -88,34 +90,34 @@ const AdminTestimonials = () => {
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex gap-2">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 p-5 mb-8">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilterApproved('all')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              filterApproved === 'all' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            className={`px-5 py-2 rounded-xl font-medium transition-all duration-300 ${
+              filterApproved === 'all'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
             All ({testimonials.length})
           </button>
           <button
             onClick={() => setFilterApproved('approved')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              filterApproved === 'approved' 
-                ? 'bg-green-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            className={`px-5 py-2 rounded-xl font-medium transition-all duration-300 ${
+              filterApproved === 'approved'
+                ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
             Approved ({testimonials.filter(t => t.is_approved).length})
           </button>
           <button
             onClick={() => setFilterApproved('pending')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              filterApproved === 'pending' 
-                ? 'bg-yellow-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            className={`px-5 py-2 rounded-xl font-medium transition-all duration-300 ${
+              filterApproved === 'pending'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
             Pending ({testimonials.filter(t => !t.is_approved).length})
@@ -137,56 +139,81 @@ const AdminTestimonials = () => {
 
       {/* Testimonials Grid */}
       {filteredTestimonials.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <div className="text-6xl mb-4">⭐</div>
-          <p className="text-gray-500 text-lg">No testimonials found</p>
-          <p className="text-gray-400 text-sm">Add your first testimonial to get started</p>
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-100 py-20 text-center">
+          <div className="text-7xl mb-5">⭐</div>
+          <h2 className="text-2xl font-bold text-gray-800">No Testimonials Found</h2>
+          <p className="text-gray-500 mt-2">Add your first customer review.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTestimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-              <div className="flex justify-between items-start mb-3">
-                <div className="text-yellow-400 text-lg">
+            <div
+              key={testimonial.id}
+              className="group bg-white/90 backdrop-blur-xl rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+            >
+              <div className="p-6">
+                {/* Quote Icon */}
+                <div className="text-5xl text-blue-100 mb-3">❝</div>
+
+                {/* Rating Stars */}
+                <div className="flex text-yellow-400 text-xl mb-4">
                   {'⭐'.repeat(testimonial.rating)}
                   {'☆'.repeat(5 - testimonial.rating)}
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  testimonial.is_approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {testimonial.is_approved ? 'Approved' : 'Pending'}
-                </span>
-              </div>
-              <p className="text-gray-700 text-sm mb-4 line-clamp-3">"{testimonial.content}"</p>
-              <div className="border-t pt-3">
-                <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                <p className="text-sm text-gray-500">{testimonial.location}</p>
-                <p className="text-sm text-blue-600">{testimonial.project}</p>
-              </div>
-              <div className="flex gap-3 mt-4 pt-3 border-t">
-                {!testimonial.is_approved && (
-                  <button
-                    onClick={() => handleApprove(testimonial.id)}
-                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+
+                {/* Status Badge */}
+                <div className="flex justify-end -mt-12">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold shadow ${
+                      testimonial.is_approved
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}
                   >
-                    Approve
+                    {testimonial.is_approved ? 'Approved' : 'Pending'}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <p className="text-gray-600 italic leading-7 mb-5 line-clamp-4">
+                  "{testimonial.content}"
+                </p>
+
+                {/* Client Info */}
+                <div className="border-t border-gray-100 pt-4">
+                  <h4 className="font-bold text-lg text-slate-800">{testimonial.name}</h4>
+                  <p className="text-gray-500">📍 {testimonial.location}</p>
+                  <span className="inline-block mt-2 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">
+                    {testimonial.project}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="grid grid-cols-3 gap-3 mt-6">
+                  {!testimonial.is_approved && (
+                    <button
+                      onClick={() => handleApprove(testimonial.id)}
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-2 transition-all font-medium text-sm"
+                    >
+                      ✔ Approve
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setEditingTestimonial(testimonial)
+                      setShowForm(true)
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 transition-all font-medium text-sm"
+                  >
+                    ✏ Edit
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    setEditingTestimonial(testimonial)
-                    setShowForm(true)
-                  }}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(testimonial.id)}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
-                >
-                  Delete
-                </button>
+                  <button
+                    onClick={() => handleDelete(testimonial.id)}
+                    className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-2 transition-all font-medium text-sm"
+                  >
+                    🗑 Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -197,7 +224,4 @@ const AdminTestimonials = () => {
 }
 
 export default AdminTestimonials
-
-
-
 

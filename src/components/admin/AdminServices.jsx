@@ -1,6 +1,5 @@
 
 
-
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../services/api'
@@ -53,9 +52,9 @@ const AdminServices = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50 flex justify-center items-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading services...</p>
         </div>
       </div>
@@ -63,23 +62,25 @@ const AdminServices = () => {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Manage Services</h2>
-          <p className="text-gray-600 text-sm">Total: {services.length} services</p>
+    <div className="min-h-screen p-8 bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50">
+      {/* Header Card */}
+      <div className="mb-8 bg-white/80 backdrop-blur-lg border border-white/50 rounded-2xl shadow-xl p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">Manage Services</h2>
+            <p className="text-slate-500 text-sm">Total: {services.length} services</p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingService(null)
+              setShowForm(true)
+            }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center gap-2"
+          >
+            <span className="text-xl">➕</span>
+            Add Service
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setEditingService(null)
-            setShowForm(true)
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <span className="text-xl">➕</span>
-          Add Service
-        </button>
       </div>
 
       {/* Service Form Modal */}
@@ -96,7 +97,7 @@ const AdminServices = () => {
 
       {/* Services Grid */}
       {services.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
+        <div className="text-center py-16 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100">
           <div className="text-6xl mb-4">🔧</div>
           <p className="text-gray-500 text-lg">No services added yet</p>
           <p className="text-gray-400 text-sm">Add your first service to get started</p>
@@ -104,13 +105,13 @@ const AdminServices = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => (
-            <div key={service.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
+            <div key={service.id} className="group bg-white/90 backdrop-blur-lg rounded-2xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
               {/* Service Image */}
-              <div className="h-48 bg-gray-200 relative">
+              <div className="h-48 bg-gray-200 relative overflow-hidden">
                 <img
                   src={service.image_url || 'https://via.placeholder.com/400x300/cccccc/666666?text=Service'}
                   alt={service.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   onError={(e) => {
                     e.target.onerror = null
                     e.target.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Service'
@@ -119,8 +120,8 @@ const AdminServices = () => {
                 <div className="absolute top-3 right-3">
                   <button
                     onClick={() => handleToggleActive(service.id, service.is_active)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      service.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    className={`px-3 py-1 rounded-full text-xs font-semibold shadow ${
+                      service.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                     }`}
                   >
                     {service.is_active ? 'Active' : 'Inactive'}
@@ -128,7 +129,7 @@ const AdminServices = () => {
                 </div>
               </div>
               
-              <div className="p-6">
+              <div className="p-6 bg-gradient-to-b from-white to-slate-50">
                 <div className="flex items-center gap-3 mb-2">
                   {service.icon && (
                     <span className="text-3xl">{service.icon}</span>
@@ -142,7 +143,7 @@ const AdminServices = () => {
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1">
                       {service.features.slice(0, 3).map((feature, idx) => (
-                        <span key={idx} className="bg-gray-100 text-xs px-2 py-1 rounded-full">
+                        <span key={idx} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
                           {feature}
                         </span>
                       ))}
@@ -153,19 +154,19 @@ const AdminServices = () => {
                   </div>
                 )}
                 
-                <div className="flex gap-3 pt-3 border-t">
+                <div className="grid grid-cols-2 gap-3 pt-5 border-t border-gray-100">
                   <button
                     onClick={() => {
                       setEditingService(service)
                       setShowForm(true)
                     }}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-all"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(service.id)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium transition-all"
                   >
                     Delete
                   </button>
@@ -180,4 +181,3 @@ const AdminServices = () => {
 }
 
 export default AdminServices
-

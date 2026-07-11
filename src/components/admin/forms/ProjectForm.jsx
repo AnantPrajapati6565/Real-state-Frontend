@@ -1,6 +1,10 @@
+
+
+
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
+import { X, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react'
 
 const ProjectForm = ({ project, onClose }) => {
   const [formData, setFormData] = useState({
@@ -75,11 +79,7 @@ const ProjectForm = ({ project, onClose }) => {
         setImagePreview(reader.result)
       }
       reader.readAsDataURL(file)
-      // Store filename for API
-      setFormData({
-        ...formData,
-        image: file.name
-      })
+      // We'll send the actual file via FormData, so we don't need to store filename here
     }
   }
 
@@ -88,18 +88,40 @@ const ProjectForm = ({ project, onClose }) => {
     setLoading(true)
 
     try {
-      const data = {
-        ...formData,
-        price: parseFloat(formData.price),
-        bedrooms: parseInt(formData.bedrooms) || null,
-        bathrooms: parseInt(formData.bathrooms) || null
+      // Use FormData to support file upload
+      const submitData = new FormData()
+
+      // Append all text fields
+      submitData.append('name', formData.name)
+      submitData.append('description', formData.description)
+      submitData.append('price', formData.price)
+      submitData.append('location', formData.location)
+      submitData.append('status', formData.status)
+      submitData.append('category', formData.category)
+      submitData.append('bedrooms', formData.bedrooms || '')
+      submitData.append('bathrooms', formData.bathrooms || '')
+      submitData.append('area', formData.area || '')
+      submitData.append('features', JSON.stringify(formData.features))
+
+      // If there's a new image file, append it
+      if (imageFile) {
+        submitData.append('image', imageFile)
+      } else if (formData.image) {
+        // If no new file but we have an existing image URL, send it as a string
+        submitData.append('existingImage', formData.image)
+      }
+
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
 
       if (project) {
-        await api.put(`/projects/${project.id}`, data)
+        await api.put(`/projects/${project.id}`, submitData, config)
         toast.success('✅ Project updated successfully!')
       } else {
-        await api.post('/projects', data)
+        await api.post('/projects', submitData, config)
         toast.success('✅ Project created successfully!')
       }
       
@@ -123,6 +145,8 @@ const ProjectForm = ({ project, onClose }) => {
   ]
 
   const selectUnsplashImage = (url) => {
+    // When selecting an Unsplash image, we treat it as a URL (not a file)
+    setImageFile(null) // clear any file selection
     setFormData({
       ...formData,
       image: url
@@ -131,26 +155,26 @@ const ProjectForm = ({ project, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+    <div className="fixed inset-0 bg-gradient-to-br from-black/70 via-slate-900/60 to-blue-900/60 backdrop-blur-md flex items-center justify-center z-50 p-5">
+      <div className="bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-3xl shadow-2xl border border-white max-w-5xl w-full max-h-[92vh] overflow-y-auto p-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6 pb-4 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {project ? '✏️ Edit Project' : '➕ Add New Project'}
+        <div className="flex justify-between items-center mb-8 pb-5 border-b border-blue-200">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+            {project ? '✏️ Edit Project' : '🏗️ Add New Project'}
           </h2>
           <button 
             onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600 text-2xl transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Project Name *
               </label>
               <input
@@ -159,12 +183,12 @@ const ProjectForm = ({ project, onClose }) => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="e.g., Luxury Villa in Juhu"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Location *
               </label>
               <input
@@ -173,7 +197,7 @@ const ProjectForm = ({ project, onClose }) => {
                 value={formData.location}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="e.g., Mumbai"
               />
             </div>
@@ -181,7 +205,7 @@ const ProjectForm = ({ project, onClose }) => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
               Description *
             </label>
             <textarea
@@ -190,15 +214,15 @@ const ProjectForm = ({ project, onClose }) => {
               onChange={handleChange}
               required
               rows="3"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
               placeholder="Describe the property..."
             />
           </div>
 
-          {/* Price and Area */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Price, Area, Image URL */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Price *
               </label>
               <input
@@ -207,12 +231,12 @@ const ProjectForm = ({ project, onClose }) => {
                 value={formData.price}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="25000000"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Area (sq ft)
               </label>
               <input
@@ -220,91 +244,97 @@ const ProjectForm = ({ project, onClose }) => {
                 name="area"
                 value={formData.area}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="2500 sq ft"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Image URL (optional)
               </label>
               <input
                 type="text"
                 name="image"
                 value={formData.image}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
           </div>
 
           {/* Image Upload Section */}
-          <div className="border rounded-lg p-4 bg-gray-50">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Project Image
-            </label>
-            
-            {/* Image Preview */}
-            {imagePreview && (
-              <div className="mb-4">
-                <img 
-                  src={imagePreview} 
-                  alt="Project preview" 
-                  className="h-48 w-full object-cover rounded-lg"
-                  onError={(e) => {
-                    e.target.onerror = null
-                    e.target.src = 'https://via.placeholder.com/600x400/cccccc/666666?text=No+Image'
-                  }}
+          <div className="border-2 border-dashed border-blue-300 rounded-2xl p-6 bg-blue-50/30 hover:border-blue-500 hover:bg-blue-50 transition">
+            <label className="block cursor-pointer">
+              <div className="text-center">
+                <Upload className="w-12 h-12 mx-auto text-blue-400 mb-3" />
+                <p className="font-semibold text-gray-700">Upload Project Image</p>
+                <p className="text-gray-500 text-sm">Click here to choose an image (JPG, PNG, WebP)</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
               </div>
-            )}
+            </label>
+          </div>
 
-            {/* File Upload */}
-            <div className="mb-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Project preview"
+                className="w-full h-72 object-cover rounded-2xl shadow-xl border-4 border-white"
               />
-              <p className="text-xs text-gray-500 mt-1">Upload an image file (JPG, PNG, WebP)</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview(null)
+                  setImageFile(null)
+                  setFormData({ ...formData, image: '' })
+                }}
+                className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
+          )}
 
-            {/* Unsplash Image Suggestions */}
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Or choose from suggested images:</p>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                {unsplashImages.map((img, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => selectUnsplashImage(img.url)}
-                    className="relative h-16 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all"
-                  >
-                    <img 
-                      src={img.url} 
-                      alt={img.label}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-opacity"></div>
-                  </button>
-                ))}
-              </div>
+          {/* Unsplash Image Suggestions */}
+          <div>
+            <p className="text-sm font-semibold text-gray-600 mb-3">Or choose from suggested images:</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {unsplashImages.map((img, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => selectUnsplashImage(img.url)}
+                  className="relative h-20 rounded-xl overflow-hidden hover:scale-105 hover:shadow-xl transition-all duration-300"
+                >
+                  <img 
+                    src={img.url} 
+                    alt={img.label}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition"></div>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Status and Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Status
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
               >
                 <option value="available">Available</option>
                 <option value="sold">Sold</option>
@@ -313,14 +343,14 @@ const ProjectForm = ({ project, onClose }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Category
               </label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
               >
                 <option value="residential">Residential</option>
                 <option value="commercial">Commercial</option>
@@ -330,9 +360,9 @@ const ProjectForm = ({ project, onClose }) => {
           </div>
 
           {/* Bedrooms and Bathrooms */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Bedrooms
               </label>
               <input
@@ -340,13 +370,13 @@ const ProjectForm = ({ project, onClose }) => {
                 name="bedrooms"
                 value={formData.bedrooms}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="4"
                 min="0"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Bathrooms
               </label>
               <input
@@ -354,7 +384,7 @@ const ProjectForm = ({ project, onClose }) => {
                 name="bathrooms"
                 value={formData.bathrooms}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
                 placeholder="3"
                 min="0"
               />
@@ -363,7 +393,7 @@ const ProjectForm = ({ project, onClose }) => {
 
           {/* Features */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
               Features
             </label>
             <div className="flex gap-2">
@@ -372,31 +402,31 @@ const ProjectForm = ({ project, onClose }) => {
                 value={featureInput}
                 onChange={(e) => setFeatureInput(e.target.value)}
                 placeholder="Add a feature (e.g., Swimming Pool)"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
+                className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition duration-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
               />
               <button
                 type="button"
                 onClick={handleAddFeature}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md hover:shadow-lg transition-all hover:scale-105"
               >
-                Add
+                <Plus className="w-5 h-5" />
               </button>
             </div>
             {formData.features.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {formData.features.map((feature, index) => (
                   <span
                     key={index}
-                    className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-4 py-2 rounded-full shadow-sm"
                   >
                     {feature}
                     <button
                       type="button"
                       onClick={() => handleRemoveFeature(index)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 font-bold"
                     >
-                      ×
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </span>
                 ))}
@@ -405,11 +435,11 @@ const ProjectForm = ({ project, onClose }) => {
           </div>
 
           {/* Form Actions */}
-          <div className="flex gap-3 pt-4 border-t mt-6">
+          <div className="flex gap-3 pt-5 border-t border-blue-200 mt-6">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -426,7 +456,7 @@ const ProjectForm = ({ project, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-8 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
             >
               Cancel
             </button>
@@ -438,7 +468,4 @@ const ProjectForm = ({ project, onClose }) => {
 }
 
 export default ProjectForm
-
-
-
 
